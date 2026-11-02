@@ -1,0 +1,177 @@
+[
+  {
+    "family": "BF-A",
+    "pathway_count": 1,
+    "recall_at_1": 1.0,
+    "failure_prevention_rate": 1.0,
+    "causal_f1": 1.0
+  },
+  {
+    "family": "BF-A",
+    "pathway_count": 1,
+    "recall_at_1": 1.0,
+    "failure_prevention_rate": 1.0,
+    "causal_f1": 1.0
+  },
+  {
+    "family": "BF-A",
+    "pathway_count": 1,
+    "recall_at_1": 1.0,
+    "failure_prevention_rate": 1.0,
+    "causal_f1": 1.0
+  },
+  {
+    "family": "BF-A",
+    "pathway_count": 1,
+    "recall_at_1": 1.0,
+    "failure_prevention_rate": 1.0,
+    "causal_f1": 1.0
+  },
+  {
+    "family": "BF-A",
+    "pathway_count": 1,
+    "recall_at_1": 1.0,
+    "failure_prevention_rate": 1.0,
+    "causal_f1": 1.0
+  },
+  {
+    "family": "BF-B",
+    "pathway_count": 2,
+    "recall_at_1": 0.0,
+    "failure_prevention_rate": 0.0,
+    "causal_f1": 0.0
+  },
+  {
+    "family": "BF-B",
+    "pathway_count": 2,
+    "recall_at_1": 0.0,
+    "failure_prevention_rate": 0.0,
+    "causal_f1": 0.0
+  },
+  {
+    "family": "BF-B",
+    "pathway_count": 2,
+    "recall_at_1": 0.0,
+    "failure_prevention_rate": 0.0,
+    "causal_f1": 0.0
+  },
+  {
+    "family": "BF-B",
+    "pathway_count": 2,
+    "recall_at_1": 0.0,
+    "failure_prevention_rate": 0.0,
+    "causal_f1": 0.0
+  },
+  {
+    "family": "BF-B",
+    "pathway_count": 2,
+    "recall_at_1": 0.0,
+    "failure_prevention_rate": 0.0,
+    "causal_f1": 0.0
+  },
+  {
+    "family": "BF-C",
+    "pathway_count": 2,
+    "recall_at_1": 1.0,
+    "failure_prevention_rate": 1.0,
+    "causal_f1": 0.6666666666666666
+  },
+  {
+    "family": "BF-C",
+    "pathway_count": 2,
+    "recall_at_1": 1.0,
+    "failure_prevention_rate": 1.0,
+    "causal_f1": 0.6666666666666666
+  },
+  {
+    "family": "BF-C",
+    "pathway_count": 2,
+    "recall_at_1": 1.0,
+    "failure_prevention_rate": 1.0,
+    "causal_f1": 0.6666666666666666
+  },
+  {
+    "family": "BF-C",
+    "pathway_count": 2,
+    "recall_at_1": 1.0,
+    "failure_prevention_rate": 1.0,
+    "causal_f1": 0.6666666666666666
+  },
+  {
+    "family": "BF-C",
+    "pathway_count": 2,
+    "recall_at_1": 1.0,
+    "failure_prevention_rate": 1.0,
+    "causal_f1": 0.6666666666666666
+  },
+  {
+    "family": "BF-D",
+    "pathway_count": 1,
+    "recall_at_1": 1.0,
+    "failure_prevention_rate": 1.0,
+    "causal_f1": 1.0
+  },
+  {
+    "family": "BF-D",
+    "pathway_count": 1,
+    "recall_at_1": 1.0,
+    "failure_prevention_rate": 1.0,
+    "causal_f1": 1.0
+  },
+  {
+    "family": "BF-D",
+    "pathway_count": 1,
+    "recall_at_1": 1.0,
+    "failure_prevention_rate": 1.0,
+    "causal_f1": 1.0
+  },
+  {
+    "family": "BF-D",
+    "pathway_count": 1,
+    "recall_at_1": 1.0,
+    "failure_prevention_rate": 1.0,
+    "causal_f1": 1.0
+  },
+  {
+    "family": "BF-D",
+    "pathway_count": 1,
+    "recall_at_1": 1.0,
+    "failure_prevention_rate": 1.0,
+    "causal_f1": 1.0
+  },
+  {
+    "family": "BF-G",
+    "pathway_count": 1,
+    "recall_at_1": 1.0,
+    "failure_prevention_rate": 1.0,
+    "causal_f1": 0.6666666666666666
+  },
+  {
+    "family": "BF-G",
+    "pathway_count": 1,
+    "recall_at_1": 1.0,
+    "failure_prevention_rate": 1.0,
+    "causal_f1": 0.6666666666666666
+  },
+  {
+    "family": "BF-G",
+    "pathway_count": 1,
+    "recall_at_1": 1.0,
+    "failure_prevention_rate": 1.0,
+    "causal_f1": 0.6666666666666666
+  },
+  {
+    "family": "BF-G",
+    "pathway_count": 1,
+    "recall_at_1": 1.0,
+    "failure_prevention_rate": 1.0,
+    "causal_f1": 0.6666666666666666
+  },
+  {
+    "family": "BF-G",
+    "pathway_count": 1,
+    "recall_at_1": 1.0,
+    "failure_prevention_rate": 1.0,
+    "causal_f1": 0.6666666666666666
+  }
+]

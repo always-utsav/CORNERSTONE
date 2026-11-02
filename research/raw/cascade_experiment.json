@@ -1,0 +1,82 @@
+[
+  {
+    "family": "BF-B",
+    "seed": 42,
+    "individual_cee_sum": 0.0,
+    "joint_cee": 0.0,
+    "prevention_rate_individual": 0.0,
+    "prevention_rate_joint": 0.0
+  },
+  {
+    "family": "BF-B",
+    "seed": 43,
+    "individual_cee_sum": 0.0,
+    "joint_cee": 0.0,
+    "prevention_rate_individual": 0.0,
+    "prevention_rate_joint": 0.0
+  },
+  {
+    "family": "BF-B",
+    "seed": 44,
+    "individual_cee_sum": 0.0,
+    "joint_cee": 0.0,
+    "prevention_rate_individual": 0.0,
+    "prevention_rate_joint": 0.0
+  },
+  {
+    "family": "BF-B",
+    "seed": 45,
+    "individual_cee_sum": 0.0,
+    "joint_cee": 0.0,
+    "prevention_rate_individual": 0.0,
+    "prevention_rate_joint": 0.0
+  },
+  {
+    "family": "BF-B",
+    "seed": 46,
+    "individual_cee_sum": 0.0,
+    "joint_cee": 0.0,
+    "prevention_rate_individual": 0.0,
+    "prevention_rate_joint": 0.0
+  },
+  {
+    "family": "BF-C",
+    "seed": 42,
+    "individual_cee_sum": 1.0,
+    "joint_cee": 1.0,
+    "prevention_rate_individual": 1.0,
+    "prevention_rate_joint": 1.0
+  },
+  {
+    "family": "BF-C",
+    "seed": 43,
+    "individual_cee_sum": 1.0,
+    "joint_cee": 1.0,
+    "prevention_rate_individual": 1.0,
+    "prevention_rate_joint": 1.0
+  },
+  {
+    "family": "BF-C",
+    "seed": 44,
+    "individual_cee_sum": 1.0,
+    "joint_cee": 1.0,
+    "prevention_rate_individual": 1.0,
+    "prevention_rate_joint": 1.0
+  },
+  {
+    "family": "BF-C",
+    "seed": 45,
+    "individual_cee_sum": 1.0,
+    "joint_cee": 1.0,
+    "prevention_rate_individual": 1.0,
+    "prevention_rate_joint": 1.0
+  },
+  {
+    "family": "BF-C",
+    "seed": 46,
+    "individual_cee_sum": 1.0,
+    "joint_cee": 1.0,
+    "prevention_rate_individual": 1.0,
+    "prevention_rate_joint": 1.0
+  }
+]

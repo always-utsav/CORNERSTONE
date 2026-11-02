@@ -1,0 +1,56 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+.venv/
+venv/
+env/
+.env
+!.env.example
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+coverage.xml
+*.so
+*.dylib
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+data/raw/*
+data/processed/*
+data/artifacts/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/artifacts/.gitkeep
+
+# Generated artifacts (keep locally, do not commit)
+captain_traces/
+captain_results/
+research_results/raw/
+research_results/processed/
+research_results/logs/
+*.log
+
+# Stage 2: Secrets / API keys — NEVER COMMIT
+.env
+.env.local
+.env.production
+.env.*.local
+!.env.example
+secrets/
+*.key
+*.pem
+*.secret
+
+# Stage 2: Generated research data (large, reproducible)
+# Research data is committed for reproducibility
+# research/raw/  # DO NOT ignore - needed for reproducibility
+research/processed/
+# PNG figures committed alongside SVG
