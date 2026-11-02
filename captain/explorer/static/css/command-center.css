@@ -1,0 +1,316 @@
+/**
+ * CORNERSTONE Command Center Styles
+ * Hero Layout, Central Agent Pipeline Visualizer, Granularity Comparison, Laboratory Launchpad
+ */
+
+.command-center {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* ==========================================================================
+   HERO OPENING SECTION
+   ========================================================================== */
+.hero-section {
+  background: radial-gradient(circle at 80% 20%, rgba(0, 229, 255, 0.05) 0%, transparent 60%),
+              linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-deep) 100%);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: 32px 36px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-badge-strip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.hero-headline {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.6px;
+  color: var(--text-primary);
+  max-width: 860px;
+  margin-bottom: 14px;
+}
+
+.hero-headline .highlight-cyan {
+  color: var(--cyan-primary);
+  text-shadow: 0 0 20px rgba(0, 229, 255, 0.3);
+}
+
+.hero-description {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  max-width: 820px;
+  margin-bottom: 24px;
+}
+
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* ==========================================================================
+   CENTRAL INTERACTIVE AGENT PIPELINE VISUALIZER
+   ========================================================================== */
+.pipeline-showcase-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.pipeline-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  border-bottom: 1px solid var(--border-default);
+  padding-bottom: 14px;
+}
+
+.pipeline-title-group h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pipeline-title-group p {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.pipeline-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pipeline-canvas-wrap {
+  background: var(--bg-deep);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  min-height: 320px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.pipeline-svg {
+  width: 100%;
+  height: 320px;
+}
+
+.pipeline-granularity-legend {
+  padding: 12px 16px;
+  background: var(--bg-surface-elevated);
+  border-top: 1px solid var(--border-default);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 11px;
+}
+
+.legend-channel-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+}
+
+.legend-color-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.legend-color-dot.cyan { background-color: var(--cyan-primary); box-shadow: 0 0 6px var(--cyan-primary); }
+.legend-color-dot.red { background-color: var(--red-failure); box-shadow: 0 0 6px var(--red-failure); }
+.legend-color-dot.green { background-color: var(--green-success); box-shadow: 0 0 6px var(--green-success); }
+.legend-color-dot.violet { background-color: var(--violet-primary); box-shadow: 0 0 6px var(--violet-primary); }
+
+/* ==========================================================================
+   PROBLEM FRAMING & RESEARCH MOTIVATION
+   ========================================================================== */
+.section-headline-group {
+  margin-bottom: 18px;
+}
+
+.section-headline-group h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.section-headline-group p {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.problem-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.problem-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: all var(--transition-fast);
+}
+
+.problem-card:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-2px);
+}
+
+.problem-icon-wrap {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  color: var(--cyan-primary);
+}
+
+.problem-card h4 {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.problem-card p {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+/* ==========================================================================
+   INTERACTIVE LABORATORIES SHOWCASE
+   ========================================================================== */
+.lab-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.lab-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 14px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-decoration: none;
+}
+
+.lab-card:hover {
+  border-color: var(--cyan-primary);
+  box-shadow: 0 4px 16px rgba(0, 229, 255, 0.12);
+  transform: translateY(-2px);
+}
+
+.lab-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.lab-card h4 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.lab-card p {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.lab-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--cyan-hover);
+  font-weight: 600;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* ==========================================================================
+   RESEARCH JOURNEY TIMELINE
+   ========================================================================== */
+.journey-strip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 12px 4px;
+  margin-bottom: 20px;
+}
+
+.journey-step {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.journey-step.active {
+  background: var(--cyan-dim);
+  border-color: var(--cyan-primary);
+  color: var(--cyan-primary);
+}
+
+.journey-arrow {
+  color: var(--border-strong);
+  font-size: 12px;
+}

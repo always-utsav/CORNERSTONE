@@ -1,0 +1,302 @@
+/**
+ * CORNERSTONE Layout Architecture
+ * Mission Control Shell, Persistent Header, Navigation Sidebar & Workspace Viewports
+ */
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  background-color: var(--bg-deep);
+  overflow: hidden;
+}
+
+/* ==========================================================================
+   TOP STATUS BAR (MISSION CONTROL TELEMETRY)
+   ========================================================================== */
+.top-status-bar {
+  height: var(--topbar-height);
+  background-color: var(--bg-base);
+  border-bottom: 1px solid var(--border-default);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  z-index: 100;
+  user-select: none;
+}
+
+.status-brand-cluster {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-badge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--cyan-primary);
+  background: var(--cyan-dim);
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-glow-cyan);
+  text-shadow: var(--cyan-glow);
+}
+
+.brand-title {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: var(--text-primary);
+}
+
+.brand-separator {
+  color: var(--border-strong);
+  font-weight: 300;
+}
+
+.brand-subtitle {
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 0.3px;
+}
+
+.status-telemetry-cluster {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.telemetry-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.telemetry-indicator {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+.telemetry-indicator.online {
+  background-color: var(--green-success);
+  box-shadow: 0 0 8px var(--green-success);
+}
+.telemetry-indicator.busy {
+  background-color: var(--amber-warning);
+  box-shadow: 0 0 8px var(--amber-warning);
+}
+
+.status-action-cluster {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ==========================================================================
+   APP WORKSPACE CONTAINER (SIDEBAR + MAIN + DRAWER)
+   ========================================================================== */
+.app-workspace {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ==========================================================================
+   PERSISTENT SIDEBAR NAVIGATION
+   ========================================================================== */
+.nav-sidebar {
+  width: var(--sidebar-width);
+  background-color: var(--bg-surface);
+  border-right: 1px solid var(--border-default);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow-y: auto;
+  user-select: none;
+}
+
+.nav-group-header {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  padding: 16px 14px 6px;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  margin: 1px 6px;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.nav-link:hover {
+  background-color: var(--bg-surface-elevated);
+  color: var(--text-primary);
+}
+
+.nav-link.active {
+  background-color: var(--cyan-dim);
+  color: var(--cyan-primary);
+  border-color: var(--border-glow-cyan);
+  font-weight: 600;
+}
+
+.nav-link .nav-icon {
+  font-size: 13px;
+  width: 16px;
+  text-align: center;
+  opacity: 0.85;
+}
+
+.nav-link .nav-label {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav-link .nav-key {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  background: var(--bg-deep);
+  color: var(--text-dim);
+  padding: 2px 5px;
+  border-radius: 3px;
+  border: 1px solid var(--border-subtle);
+}
+
+.nav-link.active .nav-key {
+  color: var(--cyan-hover);
+  border-color: var(--border-glow-cyan);
+}
+
+/* Sidebar Footer Telemetry */
+.sidebar-footer {
+  margin-top: auto;
+  padding: 12px 14px;
+  border-top: 1px solid var(--border-default);
+  background-color: var(--bg-base);
+}
+
+.sidebar-status-card {
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  font-size: 11px;
+}
+
+.sidebar-status-card .label {
+  color: var(--text-dim);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sidebar-status-card .val {
+  font-family: var(--font-mono);
+  color: var(--cyan-primary);
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+/* ==========================================================================
+   MAIN CONTENT VIEWPORT
+   ========================================================================== */
+.main-viewport {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-deep);
+  position: relative;
+}
+
+.section-view {
+  display: none;
+  flex: 1;
+  flex-direction: column;
+  animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.section-view.active {
+  display: flex;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Viewport Header Bar */
+.viewport-header {
+  padding: 18px 28px;
+  border-bottom: 1px solid var(--border-default);
+  background: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-base) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.viewport-title-group h2 {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  color: var(--text-primary);
+}
+
+.viewport-title-group p {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+
+.viewport-body {
+  flex: 1;
+  padding: 24px 28px;
+}
+
+/* ==========================================================================
+   RESPONSIVENESS & BREAKPOINTS
+   ========================================================================== */
+@media (max-width: 1024px) {
+  .nav-sidebar {
+    width: 210px;
+  }
+  .status-telemetry-cluster {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .nav-sidebar {
+    position: absolute;
+    left: -250px;
+    height: 100%;
+    z-index: 50;
+    transition: left var(--transition-normal);
+  }
+  .nav-sidebar.open {
+    left: 0;
+  }
+}

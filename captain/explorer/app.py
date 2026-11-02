@@ -42,7 +42,13 @@ _run_cache: dict[str, ExecutionRun] = {}
 def create_app(store_dir: Path | None = None) -> Flask:
     """Create and configure the Flask application."""
     template_dir = Path(__file__).parent / "templates"
-    app = Flask(__name__, template_folder=str(template_dir))
+    static_dir = Path(__file__).parent / "static"
+    app = Flask(
+        __name__,
+        template_folder=str(template_dir),
+        static_folder=str(static_dir),
+        static_url_path="/static",
+    )
     store_path = store_dir or _DEFAULT_STORE_DIR
     store = FileTraceStore(store_path)
 
@@ -57,6 +63,8 @@ def create_app(store_dir: Path | None = None) -> Flask:
     @app.route("/api/demo", methods=["POST"])
     def run_demo() -> Any:
         """Run a deterministic demo execution and return the run."""
+        req = request.get_json(silent=True) or {}
+        task_text = req.get("task", "What is 6 times 7? Use the calculator.")
         llm = MockLLMProvider(
             responses=[
                 "1. [TOOL:calculator] Compute 6*7\n"
@@ -64,15 +72,13 @@ def create_app(store_dir: Path | None = None) -> Flask:
                 "3. Generate response",
                 "Computation complete: 42",
                 "Echo confirmed",
-                "The answer to 6 times 7 is 42. I computed this using the calculator tool.",
+                f"The answer is 42. Computed for task: {task_text[:100]}",
             ]
         )
         registry = create_default_tool_registry()
         agent = Agent(llm=llm, tool_registry=registry)
         traced = TracedAgent(agent)
-        _response, collector = traced.run(
-            TaskInput.from_text("What is 6 times 7? Use the calculator.")
-        )
+        _response, collector = traced.run(TaskInput.from_text(task_text))
         run = collector.get_run()
 
         # Store and cache
@@ -170,14 +176,50 @@ def create_app(store_dir: Path | None = None) -> Flask:
         try:
             from captain.benchmarks.runner import BenchmarkRunner
             from captain.benchmarks.scenarios import (
+                generate_branching,
+                generate_cascade,
+                generate_complementary,
+                generate_convergent,
+                generate_cost_asymmetric,
+                generate_distractor,
+                generate_downstream_repair,
+                generate_redundant,
+                generate_root_vs_symptom,
+                generate_shared_source,
                 generate_single_cause,
             )
+            from captain.models.ids import deterministic_ids
         except ImportError as e:
             return jsonify({"error": str(e)}), 500
 
-        scenario = generate_single_cause(seed=42)
+        req = request.get_json(silent=True) or {}
+        family = req.get("family", "BF-A")
+        seed = int(req.get("seed", 42))
+
+        from collections.abc import Callable
+
+        family_map: dict[str, Callable[..., Any]] = {
+            "BF-A": generate_single_cause,
+            "BF-B": generate_redundant,
+            "BF-C": generate_complementary,
+            "BF-D": generate_distractor,
+            "BF-E": generate_cascade,
+            "BF-F": generate_cost_asymmetric,
+            "BF-G": generate_shared_source,
+            "BF-H": generate_branching,
+            "BF-I": generate_convergent,
+            "BF-J": generate_root_vs_symptom,
+            "BF-K": generate_downstream_repair,
+        }
+        generator = family_map.get(family, generate_single_cause)
+
+        with deterministic_ids(seed):
+            scenario = generator(seed=seed)
+
         _scenario_cache[scenario.scenario_id] = scenario
-        # evaluator = get_evaluator(scenario)  # used by BenchmarkRunner internally
+        # Save scenario baseline run into store and cache
+        store.save(scenario.run)
+        _run_cache[scenario.run.run_id] = scenario.run
 
         runner = BenchmarkRunner(k=2, max_set_size=3, lambda_cost=0.1)
         result = runner.run([scenario], methods=None, run_oracle=True)
@@ -201,6 +243,7 @@ def create_app(store_dir: Path | None = None) -> Flask:
         return jsonify(
             {
                 "scenario_id": scenario.scenario_id,
+                "run_id": scenario.run.run_id,
                 "family": gt.family,
                 "ground_truth": {
                     "label": "POST-HOC EVALUATION ONLY",
@@ -215,6 +258,155 @@ def create_app(store_dir: Path | None = None) -> Flask:
                     }
                     for mr in result.results
                 ],
+            }
+        )
+
+    @app.route("/api/granularity/run", methods=["POST"])
+    def run_granularity_live() -> Any:
+        """Execute a live shared-source granularity comparison (BF-G)."""
+        try:
+            from captain.analysis.estimator import channel_to_intervention
+            from captain.benchmarks.scenarios import generate_shared_source, get_evaluator
+            from captain.intervention.model import Intervention, InterventionSet, InterventionType
+            from captain.models.enums import EventType
+            from captain.models.ids import deterministic_ids
+            from captain.replay.engine import CounterfactualReplayEngine, ReplayStatus
+        except ImportError as e:
+            return jsonify({"error": str(e)}), 500
+
+        req = request.get_json(silent=True) or {}
+        seed = int(req.get("seed", 42))
+
+        with deterministic_ids(seed):
+            scenario = generate_shared_source(seed=seed)
+
+        evaluator = get_evaluator(scenario)
+        factual_run = scenario.run
+        factual_failed = evaluator(factual_run)
+        store.save(factual_run)
+        _run_cache[factual_run.run_id] = factual_run
+
+        causal_ids = set(scenario.ground_truth.causal_channel_ids)
+        causal = [c for c in scenario.candidates if c.intervention_id in causal_ids]
+        if not causal:
+            return jsonify({"error": "No causal candidate found"}), 500
+
+        ci = causal[0]
+        ch_intv = channel_to_intervention(ci, factual_run, scenario.evidence_graph)
+        ch_iset = InterventionSet(baseline_run_id=factual_run.run_id, interventions=[ch_intv])
+        ch_replay = CounterfactualReplayEngine().replay(factual_run, ch_iset)
+        ch_ok = ch_replay.status == ReplayStatus.SUCCESS
+        ch_run = ch_replay.counterfactual_run
+        if ch_run:
+            store.save(ch_run)
+            _run_cache[ch_run.run_id] = ch_run
+
+        ch_text = ""
+        ch_a_present = False
+        ch_b_present = False
+        if ch_ok and ch_run:
+            for evt in ch_run.events:
+                if evt.payload:
+                    ch_text += str(evt.payload)
+            for art in ch_run.artifacts:
+                if art.value:
+                    ch_text += str(art.value)
+            ch_a_present = "42" in ch_text
+            ch_b_present = "ok" in ch_text.lower()
+
+        ch_failed = evaluator(ch_run) if (ch_ok and ch_run) else True
+        ch_cee = 1.0 if (factual_failed and not ch_failed) else 0.0
+        ch_affected = (0 if ch_a_present else 1) + (0 if ch_b_present else 1)
+        ch_preserved = 2 - ch_affected
+        collateral_ch = max(0, ch_affected - 1)
+
+        # Source event override
+        source_evt = None
+        for evt in factual_run.events:
+            if evt.event_type == EventType.TOOL_RESULT:
+                p = evt.payload if isinstance(evt.payload, dict) else {}
+                if p.get("tool_name") == "data_source":
+                    source_evt = evt
+                    break
+
+        st_cee = 0.0
+        st_a_present = False
+        st_b_present = False
+        st_affected = 0
+        st_run = None
+        if source_evt:
+            st_intv = Intervention(
+                intervention_type=InterventionType.TOOL_RESULT_OVERRIDE,
+                baseline_run_id=factual_run.run_id,
+                target_id=source_evt.event_id,
+                replacement_value="",
+                description="Source-event-level override",
+            )
+            st_iset = InterventionSet(baseline_run_id=factual_run.run_id, interventions=[st_intv])
+            st_replay = CounterfactualReplayEngine().replay(factual_run, st_iset)
+            st_ok = st_replay.status == ReplayStatus.SUCCESS
+            st_run = st_replay.counterfactual_run
+            if st_run:
+                store.save(st_run)
+                _run_cache[st_run.run_id] = st_run
+
+            st_text = ""
+            if st_ok and st_run:
+                for evt2 in st_run.events:
+                    if evt2.payload:
+                        st_text += str(evt2.payload)
+                for art2 in st_run.artifacts:
+                    if art2.value:
+                        st_text += str(art2.value)
+                st_a_present = "42" in st_text
+                st_b_present = "ok" in st_text.lower()
+
+            st_failed = evaluator(st_run) if (st_ok and st_run) else True
+            st_cee = 1.0 if (factual_failed and not st_failed) else 0.0
+            st_affected = (0 if st_a_present else 1) + (0 if st_b_present else 1)
+
+        st_preserved = 2 - st_affected
+        collateral_st = max(0, st_affected - 1)
+
+        return jsonify(
+            {
+                "is_live": True,
+                "seed": seed,
+                "scenario_id": scenario.scenario_id,
+                "family": "BF-G",
+                "factual_failed": factual_failed,
+                "factual_run_id": factual_run.run_id,
+                "channel_run_id": ch_run.run_id if ch_run else None,
+                "source_run_id": st_run.run_id if st_run else None,
+                "channel_intervention": {
+                    "type": ch_intv.intervention_type.value,
+                    "target_id": ch_intv.target_id,
+                    "cee": ch_cee,
+                    "failure_prevented": not ch_failed,
+                    "a_present": ch_a_present,
+                    "b_present": ch_b_present,
+                    "affected_count": ch_affected,
+                    "preserved_count": ch_preserved,
+                    "collateral_damage": collateral_ch,
+                },
+                "source_event_intervention": {
+                    "type": "tool_result_override",
+                    "target_id": source_evt.event_id if source_evt else None,
+                    "cee": st_cee,
+                    "failure_prevented": not st_failed if source_evt else False,
+                    "a_present": st_a_present,
+                    "b_present": st_b_present,
+                    "affected_count": st_affected,
+                    "preserved_count": st_preserved,
+                    "collateral_damage": collateral_st,
+                },
+                "metrics": {
+                    "channel_preservation_rate": ch_preserved / 2.0,
+                    "source_preservation_rate": st_preserved / 2.0,
+                    "channel_collateral_rate": collateral_ch / 1.0,
+                    "source_collateral_rate": collateral_st / 1.0,
+                    "channel_more_selective": (ch_preserved > st_preserved),
+                },
             }
         )
 
@@ -476,7 +668,7 @@ def create_app(store_dir: Path | None = None) -> Flask:
         return jsonify({"path": str(out_path)})
 
     # --- Stage 2 Research Routes ---
-    @app.route('/research')
+    @app.route("/research")
     def research_page() -> str:
         return render_template("research.html")
 
@@ -489,31 +681,595 @@ def create_app(store_dir: Path | None = None) -> Flask:
             with open(filepath, encoding="cp1252") as f:
                 return json.load(f)
 
-    @app.route('/api/research/campaign')
+    @app.route("/api/research/campaign")
     def research_campaign() -> Any:
         return jsonify(_load_research_json("campaign_full.json"))
 
-    @app.route('/api/research/granularity')
+    @app.route("/api/research/granularity")
     def research_granularity() -> Any:
         return jsonify(_load_research_json("granularity_experiment.json"))
 
-    @app.route('/api/research/negative_controls')
+    @app.route("/api/research/negative_controls")
     def research_negative_controls() -> Any:
         return jsonify(_load_research_json("negative_controls.json"))
 
-    @app.route('/api/research/convergence')
+    @app.route("/api/research/convergence")
     def research_convergence() -> Any:
         return jsonify(_load_research_json("replay_convergence.json"))
 
-    @app.route('/api/research/real_llm')
+    @app.route("/api/research/real_llm")
     def research_real_llm() -> Any:
         return jsonify(_load_research_json("real_llm_validation.json"))
 
-    @app.route('/api/research/claims')
+    @app.route("/api/research/claims")
     def research_claims() -> Any:
         return jsonify(_load_research_json("claim_registry.json"))
 
-    @app.route('/api/research/figures/<name>')
+    @app.route("/api/research/cascade")
+    def research_cascade() -> Any:
+        return jsonify(_load_research_json("cascade_experiment.json"))
+
+    @app.route("/api/research/cost_utility")
+    def research_cost_utility() -> Any:
+        return jsonify(_load_research_json("cost_utility_sweep.json"))
+
+    @app.route("/api/research/pathway_stress")
+    def research_pathway_stress() -> Any:
+        return jsonify(_load_research_json("pathway_stress.json"))
+
+    @app.route("/api/research/scalability")
+    def research_scalability() -> Any:
+        return jsonify(_load_research_json("scalability.json"))
+
+    @app.route("/api/research/manifest")
+    def research_manifest() -> Any:
+        return jsonify(_load_research_json("experiment_manifest.json"))
+
+    @app.route("/api/system/status")
+    def system_status() -> Any:
+        run_ids = store.list_runs()
+        return jsonify(
+            {
+                "platform": "CORNERSTONE",
+                "framework": "CAPTAIN / CELA",
+                "scientific_version": "V2 (FROZEN)",
+                "status": "ONLINE",
+                "total_runs": len(run_ids),
+                "benchmark_families": 11,
+                "benchmark_instances": 275,
+                "verified_tests": 692,
+                "demo_seed": 42,
+            }
+        )
+
+    @app.route("/api/research/benchmark/<int:seed>")
+    def research_benchmark_seed(seed: int) -> Any:
+        valid_seeds = [42, 123, 456, 789, 1024]
+        if seed not in valid_seeds:
+            return jsonify(
+                {
+                    "error": f"Seed {seed} not found in frozen results.",
+                    "available_seeds": valid_seeds,
+                }
+            ), 404
+        return jsonify(_load_research_json(f"benchmark_seed_{seed}.json"))
+
+    @app.route("/api/research/benchmarks/info")
+    def research_benchmarks_info() -> Any:
+        families = [
+            {
+                "id": "BF-A",
+                "name": "Single Channel",
+                "legacy_alias": None,
+                "topology_type": "Linear Single-Path",
+                "mechanism": (
+                    "A single faulty evidence channel propagates directly from "
+                    "tool output to downstream failure, alongside an independent "
+                    "distractor channel."
+                ),
+                "causal_ground_truth": "Single target channel (k=1)",
+                "primary_challenge": (
+                    "Isolating the genuine causal channel from the benign distractor channel."
+                ),
+                "figure_key": "fig_attribution.svg",
+            },
+            {
+                "id": "BF-B",
+                "name": "Redundant OR",
+                "legacy_alias": None,
+                "topology_type": "Disjunctive Parallel Multi-Path",
+                "mechanism": (
+                    "Two independent channels both carry faulty evidence. The "
+                    "downstream consumer fails if EITHER channel is active (OR "
+                    "logic)."
+                ),
+                "causal_ground_truth": (
+                    "Either channel individually or both jointly prevent failure"
+                ),
+                "primary_challenge": (
+                    "Single-channel interventions fail to prevent failure if the "
+                    "alternate redundant channel remains unblocked."
+                ),
+                "figure_key": "fig_attribution.svg",
+            },
+            {
+                "id": "BF-C",
+                "name": "Complementary AND",
+                "legacy_alias": None,
+                "topology_type": "Conjunctive Multi-Channel Interaction",
+                "mechanism": (
+                    "Two distinct channels must interact simultaneously to induce "
+                    "failure (AND logic). Intervening on either one breaks the "
+                    "conjunction."
+                ),
+                "causal_ground_truth": (
+                    "Conjunctive pair where breaking either channel prevents failure"
+                ),
+                "primary_challenge": (
+                    "Detecting interactive effects without over-intervening or "
+                    "paying excessive cost."
+                ),
+                "figure_key": "fig_attribution.svg",
+            },
+            {
+                "id": "BF-D",
+                "name": "Distractor Noise",
+                "legacy_alias": None,
+                "topology_type": "High-Distractor Ratio",
+                "mechanism": (
+                    "A single true causal channel surrounded by multiple non-causal "
+                    "distractor channels carrying irrelevant tool outputs."
+                ),
+                "causal_ground_truth": "Single causal channel among 2+ distractors",
+                "primary_challenge": (
+                    "Suppression of false positives; baselines suffer up to 75% "
+                    "distractor false selection rate."
+                ),
+                "figure_key": "fig_attribution.svg",
+            },
+            {
+                "id": "BF-E",
+                "name": "Cascade Multi-Hop",
+                "legacy_alias": None,
+                "topology_type": "Deep 3-Hop Linear Propagation",
+                "mechanism": (
+                    "Failure originates at an upstream tool, passes through intermediate "
+                    "transformation artifacts, and terminates at final agent state."
+                ),
+                "causal_ground_truth": "Earliest root cause vs intermediate transmission channels",
+                "primary_challenge": (
+                    "Distinguishing upstream root cause from downstream propagation "
+                    "symptoms across 3 hops."
+                ),
+                "figure_key": "fig_attribution.svg",
+            },
+            {
+                "id": "BF-F",
+                "name": "Cost-Asymmetric AND",
+                "legacy_alias": None,
+                "topology_type": "Cost-Weighted Conjunctive",
+                "mechanism": (
+                    "Complementary failure requiring both channels, but the channels "
+                    "have strongly asymmetric intervention costs (e.g., cost 1.0 "
+                    "vs cost 5.0)."
+                ),
+                "causal_ground_truth": "Cheaper causal channel in the conjunctive cut",
+                "primary_challenge": (
+                    "Budget optimization; choosing the minimum-cost intervention "
+                    "set that still successfully prevents failure."
+                ),
+                "figure_key": "fig_cost_utility.svg",
+            },
+            {
+                "id": "BF-G",
+                "name": "Shared Source Divergence",
+                "legacy_alias": None,
+                "topology_type": "Multi-Artifact Tool Output",
+                "mechanism": (
+                    "A single tool execution event produces two separate artifacts: "
+                    "A (causal/faulty) and B (benign/unrelated)."
+                ),
+                "causal_ground_truth": "Channel A only (preserving Channel B)",
+                "primary_challenge": (
+                    "Demonstrating that channel intervention preserves unrelated "
+                    "artifact B with zero collateral damage, whereas source-event "
+                    "intervention destroys both."
+                ),
+                "figure_key": "fig_granularity.svg",
+            },
+            {
+                "id": "BF-H",
+                "name": "Convergent Mixed",
+                "legacy_alias": "BRANCHING",
+                "topology_type": "Mixed Causal and Benign Convergence",
+                "mechanism": (
+                    "A causal channel and an independent benign channel converge "
+                    "into an intermediate aggregator before failure."
+                ),
+                "causal_ground_truth": "Causal tributary channel prior to aggregator",
+                "primary_challenge": (
+                    "Attribution before aggregation merges causal signal with benign information."
+                ),
+                "figure_key": "fig_attribution.svg",
+            },
+            {
+                "id": "BF-I",
+                "name": "Convergent Diamond",
+                "legacy_alias": None,
+                "topology_type": "Diamond Topology with Single Cause",
+                "mechanism": (
+                    "Execution branches from common source and converges downstream, "
+                    "where only one branch carries failure semantics."
+                ),
+                "causal_ground_truth": "Active faulty branch channel",
+                "primary_challenge": (
+                    "Isolating which branch of the diamond graph actually transmits the failure."
+                ),
+                "figure_key": "fig_attribution.svg",
+            },
+            {
+                "id": "BF-J",
+                "name": "Parallel Independent Sources",
+                "legacy_alias": "ROOT_VS_SYMPTOM",
+                "topology_type": "Dual Independent Origin Sources",
+                "mechanism": (
+                    "Two separate initial root events generate independent failure "
+                    "propagation paths."
+                ),
+                "causal_ground_truth": "Independent origin channels",
+                "primary_challenge": (
+                    "Root attribution when multiple upstream origins exist concurrently."
+                ),
+                "figure_key": "fig_attribution.svg",
+            },
+            {
+                "id": "BF-K",
+                "name": "Downstream Persistence",
+                "legacy_alias": "DOWNSTREAM_REPAIR",
+                "topology_type": "Ineffective Downstream Repair",
+                "mechanism": (
+                    "An intermediate repair or mitigation step attempts to fix "
+                    "faulty evidence but fails, leaving the downstream error persistent."
+                ),
+                "causal_ground_truth": (
+                    "Original upstream generator (repair channel is ineffective)"
+                ),
+                "primary_challenge": (
+                    "Recognizing that the downstream repair was ineffective and "
+                    "tracing back to the true upstream origin."
+                ),
+                "figure_key": "fig_attribution.svg",
+            },
+        ]
+        return jsonify({"families": families, "total_families": len(families)})
+
+    @app.route("/api/research/methods")
+    def research_methods() -> Any:
+        methods = [
+            {
+                "id": "B1_random",
+                "code": "B1",
+                "name": "Random Intervention",
+                "category": "Baseline",
+                "description": (
+                    "Monte Carlo random sampling of candidate intervention channels "
+                    "from upstream candidates."
+                ),
+                "theoretical_properties": "Uniform exploration; no causal heuristic.",
+                "empirical_notes": (
+                    "High F1 on small graphs purely by chance, but suffers high "
+                    "distractor selection rate (73.3%) and high intervention cost "
+                    "(2.27)."
+                ),
+                "is_ablation": False,
+            },
+            {
+                "id": "B2_provenance",
+                "code": "B2",
+                "name": "Provenance-Only Reachability",
+                "category": "Baseline",
+                "description": (
+                    "Selects all channels reachable in the upstream provenance "
+                    "DAG from the failure symptom."
+                ),
+                "theoretical_properties": (
+                    "Guaranteed reachability; equivalent to CELA Stage 1 (A1)."
+                ),
+                "empirical_notes": (
+                    "Admits all upstream channels regardless of whether they actually "
+                    "contributed to failure."
+                ),
+                "is_ablation": False,
+                "equivalence": "A1_cela",
+            },
+            {
+                "id": "B3_cee_rank",
+                "code": "B3",
+                "name": "CEE Ranking (Single-Channel)",
+                "category": "Baseline",
+                "description": (
+                    "Ranks channels strictly by individual Counterfactual Execution "
+                    "Effect without cascade analysis."
+                ),
+                "theoretical_properties": (
+                    "Greedy single-channel screening; equivalent to CELA Stage 2 (A2)."
+                ),
+                "empirical_notes": (
+                    "High recall (1.0), but cannot reason about conjunctive interactions "
+                    "or downstream collateral damage."
+                ),
+                "is_ablation": False,
+                "equivalence": "A2_cela",
+            },
+            {
+                "id": "B4_graph_structural",
+                "code": "B4",
+                "name": "Graph-Structural Heuristic",
+                "category": "Baseline",
+                "description": (
+                    "Non-interventional graph centrality ranking (degree, betweenness, "
+                    "proximity to failure)."
+                ),
+                "theoretical_properties": "Zero replay cost; relies entirely on topology.",
+                "empirical_notes": "Easily misled by benign hubs or high-degree distractor tools.",
+                "is_ablation": False,
+            },
+            {
+                "id": "B5_cost_aware",
+                "code": "B5",
+                "name": "Cost-Aware Greedy",
+                "category": "Baseline",
+                "description": (
+                    "Intervenes on minimum-cost candidate channels without counterfactual "
+                    "validation."
+                ),
+                "theoretical_properties": "Cost minimization heuristic.",
+                "empirical_notes": (
+                    "Low cost (1.82) but lower recall (0.87) due to ignoring actual causal power."
+                ),
+                "is_ablation": False,
+            },
+            {
+                "id": "A1_cela",
+                "code": "A1",
+                "name": "CELA-Provenance",
+                "category": "CELA Ablation",
+                "description": "Stage 1 structural provenance filtering only.",
+                "theoretical_properties": "Equivalent to baseline B2_provenance.",
+                "empirical_notes": (
+                    "Establishes baseline candidate set for subsequent counterfactual screening."
+                ),
+                "is_ablation": True,
+                "equivalence": "B2_provenance",
+            },
+            {
+                "id": "A2_cela",
+                "code": "A2",
+                "name": "CELA-CEE Screening",
+                "category": "CELA Ablation",
+                "description": (
+                    "Stage 1 provenance + Stage 2 counterfactual replay screening "
+                    "(CEE > threshold)."
+                ),
+                "theoretical_properties": "Equivalent to baseline B3_cee_rank.",
+                "empirical_notes": (
+                    "Filters non-causal candidates; achieves 1.0 recall and 0.82 prevention rate."
+                ),
+                "is_ablation": True,
+                "equivalence": "B3_cee_rank",
+            },
+            {
+                "id": "A3_cela",
+                "code": "A3",
+                "name": "CELA-Cascade Lookahead",
+                "category": "CELA Ablation",
+                "description": (
+                    "Adds Stage 3 downstream cascade propagation analysis with uniform costs."
+                ),
+                "theoretical_properties": (
+                    "Evaluates multi-hop downstream consequences before committing "
+                    "to intervention."
+                ),
+                "empirical_notes": (
+                    "Dramatic drop in distractor false selection rate from 58.3% down to 1.67%."
+                ),
+                "is_ablation": True,
+            },
+            {
+                "id": "A4_cela",
+                "code": "A4",
+                "name": "CELA-Greedy Knapsack",
+                "category": "CELA Ablation",
+                "description": (
+                    "Adds Stage 4 greedy cost-utility multi-objective optimization "
+                    "with budget constraints."
+                ),
+                "theoretical_properties": (
+                    "Approximates Pareto-optimal frontier under submodular utility assumptions."
+                ),
+                "empirical_notes": (
+                    "Reduces intervention cost to 0.80 and distractor selection "
+                    "to 0.0% with 0.72 utility."
+                ),
+                "is_ablation": True,
+            },
+            {
+                "id": "A5_cela",
+                "code": "A5",
+                "name": "CELA-Full Pipeline",
+                "category": "Full Framework",
+                "description": (
+                    "Complete end-to-end framework: Provenance -> CEE Screening "
+                    "-> Cascade Analysis -> Pareto Cost-Utility Optimization."
+                ),
+                "theoretical_properties": (
+                    "Full mathematical integration of all 4 pipeline stages."
+                ),
+                "empirical_notes": (
+                    "Highest utility (0.720), 0.0% distractor selection, minimal "
+                    "intervention cost (0.80). Causal F1 difference vs B1 is p=0.1156 "
+                    "(honest negative finding: not statistically significant on "
+                    "raw F1, but vastly superior in utility and distractor immunity)."
+                ),
+                "is_ablation": False,
+            },
+        ]
+        return jsonify(
+            {
+                "methods": methods,
+                "equivalences": {"A1_cela": "B2_provenance", "A2_cela": "B3_cee_rank"},
+                "total_methods": len(methods),
+            }
+        )
+
+    @app.route("/api/research/figures")
+    def research_figures_catalog() -> Any:
+        figures = [
+            {
+                "id": "fig_attribution",
+                "filename_svg": "fig_attribution.svg",
+                "filename_png": "fig_attribution.png",
+                "title": "Attribution & Precision-Recall Comparison Across 11 Families",
+                "category": "Main Results",
+                "description": (
+                    "Displays Causal Precision, Causal Recall, and F1 across methods "
+                    "B1-B5 and A1-A5 across all 11 benchmark families."
+                ),
+                "key_takeaway": (
+                    "CELA A3-A5 eliminate false positives in distractor-heavy "
+                    "benchmarks while maintaining strong recall."
+                ),
+                "metric_highlight": "Precision: A3 (0.99) vs B1 (0.75)",
+            },
+            {
+                "id": "fig_collateral",
+                "filename_svg": "fig_collateral.svg",
+                "filename_png": "fig_collateral.png",
+                "title": "Collateral Evidence Modification vs Preserved State",
+                "category": "Granularity",
+                "description": (
+                    "Compares channel intervention against coarse source-event "
+                    "intervention in multi-artifact tool executions."
+                ),
+                "key_takeaway": (
+                    "Channel intervention achieves 100% unrelated evidence preservation "
+                    "vs 0% for source-event intervention."
+                ),
+                "metric_highlight": "Collateral Damage: 0% (Channel) vs 100% (Source-Event)",
+            },
+            {
+                "id": "fig_granularity",
+                "filename_svg": "fig_granularity.svg",
+                "filename_png": "fig_granularity.png",
+                "title": "Granularity Experiment (BF-G Shared Source Dedicated Analysis)",
+                "category": "Granularity",
+                "description": (
+                    "Detailed multi-panel breakdown of the 5 BF-G scenario instances "
+                    "evaluating artifact preservation, collateral rate, and selectivity."
+                ),
+                "key_takeaway": (
+                    "Unanimous descriptive superiority (5/5 instances) for channel "
+                    "intervention over source-event intervention."
+                ),
+                "metric_highlight": "5/5 Unanimous Descriptive Preservation",
+            },
+            {
+                "id": "fig_convergence",
+                "filename_svg": "fig_convergence.svg",
+                "filename_png": "fig_convergence.png",
+                "title": "Replay Convergence & Bootstrap Confidence Intervals",
+                "category": "Convergence",
+                "description": (
+                    "Evaluates stability of CEE estimate as replay budget increases "
+                    "from N=1 to N=50."
+                ),
+                "key_takeaway": (
+                    "Under deterministic environment semantics, CEE estimates "
+                    "stabilize immediately with zero variance."
+                ),
+                "metric_highlight": "Confidence Interval Width -> 0.0",
+            },
+            {
+                "id": "fig_cost_utility",
+                "filename_svg": "fig_cost_utility.svg",
+                "filename_png": "fig_cost_utility.png",
+                "title": "Cost-Utility Tradeoff & Pareto Frontiers",
+                "category": "Optimization",
+                "description": (
+                    "Sweeps the lambda regularization parameter across [0.0, 1.0] "
+                    "to demonstrate Pareto-optimal intervention set selection."
+                ),
+                "key_takeaway": (
+                    "CELA A4/A5 dominate baselines by finding the optimal balance "
+                    "between intervention cost and failure prevention."
+                ),
+                "metric_highlight": "Optimal Utility: 0.720 (lambda=0.1)",
+            },
+            {
+                "id": "fig_negative_controls",
+                "filename_svg": "fig_negative_controls.svg",
+                "filename_png": "fig_negative_controls.png",
+                "title": "Negative Controls & Falsification Validation",
+                "category": "Scientific Honesty",
+                "description": (
+                    "Tests synthetic interventions on known benign artifacts and "
+                    "irrelevant tools across BF-A and BF-G."
+                ),
+                "key_takeaway": (
+                    "Every negative control yields CEE=0.0 with 100% falsification "
+                    "success (0 false causal attributions)."
+                ),
+                "metric_highlight": "Observed CEE: 0.000 (Expected: 0.000)",
+            },
+            {
+                "id": "fig_pathway_stress",
+                "filename_svg": "fig_pathway_stress.svg",
+                "filename_png": "fig_pathway_stress.png",
+                "title": "Pathway Stress & Graph Complexity Scaling",
+                "category": "Scalability",
+                "description": (
+                    "Evaluates candidate screening and replay overhead as graph "
+                    "pathway count scales from 1 to 10."
+                ),
+                "key_takeaway": (
+                    "Provenance filtering keeps candidate set compact even under "
+                    "dense multi-path execution topologies."
+                ),
+                "metric_highlight": "Scales Sub-linearly with Replay Budget",
+            },
+            {
+                "id": "fig_real_llm",
+                "filename_svg": "fig_real_llm.svg",
+                "filename_png": "fig_real_llm.png",
+                "title": "Real-LLM Validation (Gemini 2.5 Flash Grounding)",
+                "category": "Real-LLM Validation",
+                "description": (
+                    "Live prompt-level counterfactual intervention on real Gemini "
+                    "API responses demonstrating non-zero CEE."
+                ),
+                "key_takeaway": (
+                    "Confirms that channel intervention operates on real probabilistic "
+                    "LLM completions, not just mock simulators."
+                ),
+                "metric_highlight": "Live CEE > 0 Observed",
+            },
+            {
+                "id": "fig_scalability",
+                "filename_svg": "fig_scalability.svg",
+                "filename_png": "fig_scalability.png",
+                "title": "Execution Latency & Computational Overhead",
+                "category": "Performance",
+                "description": "Wall-clock runtime per scenario across all benchmark families.",
+                "key_takeaway": (
+                    "Mean scenario evaluation completes in under 4ms per instance, "
+                    "enabling fast interactive analysis."
+                ),
+                "metric_highlight": "Mean Runtime: 2.8ms per scenario",
+            },
+        ]
+        return jsonify({"figures": figures, "total_figures": len(figures)})
+
+    @app.route("/api/research/figures/<name>")
     def research_figures(name: str) -> Any:
         figs_dir = Path(__file__).parent.parent.parent / "research" / "figures"
         return send_from_directory(str(figs_dir), name)

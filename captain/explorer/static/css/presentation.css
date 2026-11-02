@@ -1,0 +1,274 @@
+/**
+ * CORNERSTONE Presentation Mode Styles
+ * Projector-Optimized Contrast, Large Typography, Slide Controller, Speaker Notes Drawer
+ */
+
+/* Presentation Mode Body State */
+body.presentation-mode {
+  --topbar-height: 56px;
+  --font-base-scale: 1.15;
+}
+
+body.presentation-mode .nav-sidebar {
+  display: none !important;
+}
+
+body.presentation-mode .app-shell {
+  height: 100vh;
+  width: 100vw;
+  background-color: #02040a;
+}
+
+body.presentation-mode .main-viewport {
+  padding: 0;
+  background: radial-gradient(circle at 50% 30%, #081124 0%, #02040a 85%);
+}
+
+/* ==========================================================================
+   PRESENTATION TOP BAR
+   ========================================================================== */
+.presentation-topbar {
+  display: none;
+  height: var(--topbar-height);
+  background: rgba(4, 7, 17, 0.95);
+  border-bottom: 1px solid var(--border-default);
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 200;
+  backdrop-filter: blur(8px);
+}
+
+body.presentation-mode .presentation-topbar {
+  display: flex;
+}
+
+.presentation-title-cluster {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.presentation-indicator {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--violet-primary);
+  background: var(--violet-dim);
+  border: 1px solid var(--border-glow-violet);
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.presentation-slide-counter {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* ==========================================================================
+   PRESENTATION STAGE / SLIDE VIEWPORT
+   ========================================================================== */
+.presentation-stage {
+  display: none;
+  flex: 1;
+  padding: 80px 48px 90px;
+  max-width: 1360px;
+  margin: 0 auto;
+  width: 100%;
+  overflow-y: auto;
+}
+
+body.presentation-mode .presentation-stage {
+  display: flex;
+  flex-direction: column;
+}
+
+.presentation-slide {
+  display: none;
+  flex-direction: column;
+  gap: 28px;
+  animation: slideFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.presentation-slide.active {
+  display: flex;
+}
+
+@keyframes slideFadeIn {
+  from { opacity: 0; transform: translateY(12px) scale(0.99); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.slide-header {
+  border-bottom: 1px solid var(--border-default);
+  padding-bottom: 18px;
+}
+
+.slide-category {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--cyan-primary);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.slide-title {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.slide-subtitle {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin-top: 8px;
+  max-width: 900px;
+}
+
+.slide-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ==========================================================================
+   FLOATING PRESENTATION DOCK (CONTROLS)
+   ========================================================================== */
+.presentation-dock {
+  display: none;
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(13, 21, 39, 0.92);
+  border: 1px solid var(--border-default);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 229, 255, 0.1);
+  border-radius: 30px;
+  padding: 6px 14px;
+  align-items: center;
+  gap: 10px;
+  z-index: 250;
+  backdrop-filter: blur(12px);
+  user-select: none;
+}
+
+body.presentation-mode .presentation-dock {
+  display: flex;
+}
+
+.dock-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.dock-btn:hover {
+  background: var(--bg-surface-elevated);
+  color: var(--cyan-primary);
+}
+
+.dock-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.dock-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--border-default);
+}
+
+/* ==========================================================================
+   SPEAKER NOTES & TECHNICAL GLOSSARY DRAWER
+   ========================================================================== */
+.speaker-notes-drawer {
+  position: fixed;
+  right: -420px;
+  top: var(--topbar-height);
+  bottom: 0;
+  width: 420px;
+  background: var(--bg-surface);
+  border-left: 1px solid var(--border-default);
+  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.6);
+  z-index: 220;
+  transition: right var(--transition-normal);
+  display: flex;
+  flex-direction: column;
+}
+
+.speaker-notes-drawer.open {
+  right: 0;
+}
+
+.notes-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-default);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.notes-header h4 {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.notes-body {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.notes-body h5 {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--cyan-primary);
+  margin: 16px 0 6px;
+}
+
+.notes-body h5:first-child {
+  margin-top: 0;
+}
+
+.notes-body p {
+  margin-bottom: 12px;
+}
+
+.notes-body ul {
+  padding-left: 18px;
+  margin-bottom: 12px;
+}
+
+.notes-body li {
+  margin-bottom: 6px;
+}

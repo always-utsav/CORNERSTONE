@@ -1,0 +1,447 @@
+/**
+ * CORNERSTONE Interactive Research Laboratories Stylesheet
+ * Agent Simulator, Evidence Flow Explorer, CELA Intervention Lab, Failure Cascade Lab
+ */
+
+/* ==========================================================================
+   EXPLANATION SYSTEM TOGGLE & DUAL-AUDIENCE VISIBILITY
+   ========================================================================== */
+body.mode-simple .research-only {
+  display: none !important;
+}
+
+body.mode-research .simple-only {
+  display: none !important;
+}
+
+.explanation-badge-simple {
+  background: var(--amber-dim);
+  color: var(--amber-warning);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.explanation-badge-research {
+  background: var(--violet-dim);
+  color: var(--violet-hover);
+  border: 1px solid var(--border-glow-violet);
+}
+
+/* ==========================================================================
+   LABORATORY COMMON CONTAINERS & HEADERS
+   ========================================================================== */
+.lab-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  height: 100%;
+}
+
+.lab-toolbar {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ==========================================================================
+   1. AGENT EXECUTION SIMULATOR STYLES
+   ========================================================================== */
+.sim-grid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 16px;
+  flex: 1;
+  min-height: 520px;
+}
+
+.sim-main-stage {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sim-timeline-strip {
+  background: var(--bg-surface-elevated);
+  border-bottom: 1px solid var(--border-default);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+}
+
+.timeline-step-node {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--bg-deep);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+}
+
+.timeline-step-node:hover {
+  border-color: var(--cyan-hover);
+  color: var(--text-primary);
+}
+
+.timeline-step-node.active {
+  background: var(--cyan-dim);
+  border-color: var(--cyan-primary);
+  color: var(--cyan-primary);
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
+}
+
+.timeline-step-node.completed {
+  border-color: var(--green-success);
+  color: var(--green-success);
+}
+
+.timeline-step-node.failed {
+  border-color: var(--red-failure);
+  color: var(--red-failure);
+}
+
+.sim-active-display {
+  flex: 1;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+}
+
+.sim-event-card {
+  background: var(--bg-surface-card);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+.sim-event-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sim-event-payload {
+  background: var(--bg-deep);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+  max-height: 180px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.sim-terminal-wrap {
+  background: #02040a;
+  border-top: 1px solid var(--border-default);
+  padding: 14px 18px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  height: 160px;
+  overflow-y: auto;
+  color: var(--cyan-primary);
+}
+
+.sim-terminal-line {
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+.sim-terminal-line.cyan { color: var(--cyan-hover); }
+.sim-terminal-line.green { color: var(--green-success); }
+.sim-terminal-line.red { color: var(--red-failure); }
+
+/* ==========================================================================
+   2. EVIDENCE FLOW EXPLORER STYLES
+   ========================================================================== */
+.graph-explorer-grid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 16px;
+  height: calc(100vh - 160px);
+  min-height: 560px;
+}
+
+.graph-viewport-card {
+  background: var(--bg-deep);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.vis-network-container {
+  width: 100%;
+  flex: 1;
+  min-height: 480px;
+  background-color: #050914;
+}
+
+.graph-floating-controls {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: flex;
+  gap: 6px;
+  z-index: 10;
+  background: rgba(13, 21, 39, 0.88);
+  border: 1px solid var(--border-default);
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  backdrop-filter: blur(8px);
+}
+
+.graph-legend-overlay {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 10;
+  background: rgba(13, 21, 39, 0.88);
+  border: 1px solid var(--border-default);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  backdrop-filter: blur(8px);
+}
+
+.graph-inspector-panel {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.inspector-header {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border-default);
+  background: var(--bg-surface-elevated);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.inspector-body {
+  padding: 18px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.inspector-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.inspector-field-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-dim);
+}
+
+.inspector-field-val {
+  font-size: 12px;
+  color: var(--text-primary);
+  word-break: break-all;
+}
+
+/* ==========================================================================
+   3. CELA INTERVENTION LAB — THE SHOWSTOPPER
+   ========================================================================== */
+.cela-lab-showcase {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.cela-split-comparison {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.cela-mode-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+  overflow: hidden;
+  transition: all var(--transition-normal);
+}
+
+.cela-mode-card.mode-source {
+  border-top: 3px solid var(--red-failure);
+}
+
+.cela-mode-card.mode-channel {
+  border-top: 3px solid var(--cyan-primary);
+  box-shadow: 0 4px 20px rgba(0, 229, 255, 0.08);
+}
+
+.cela-mode-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cela-mode-title h4 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.cela-mode-title p {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.cela-visual-stage {
+  background: var(--bg-deep);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  height: 240px;
+  position: relative;
+  overflow: hidden;
+}
+
+.cela-metrics-strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  background: var(--bg-surface-elevated);
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+}
+
+.cela-metric-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cela-metric-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+.cela-metric-val {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.cela-banner-result {
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cela-banner-result.damage {
+  background: var(--red-dim);
+  color: var(--red-failure);
+  border: 1px solid rgba(244, 63, 94, 0.3);
+}
+
+.cela-banner-result.preserved {
+  background: var(--green-dim);
+  color: var(--green-success);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+/* ==========================================================================
+   4. FAILURE CASCADE LAB STYLES
+   ========================================================================== */
+.cascade-grid {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 20px;
+}
+
+.cascade-canvas-wrap {
+  background: var(--bg-deep);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  height: 380px;
+  position: relative;
+}
+
+.slider-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  background: var(--bg-surface-elevated);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-default);
+}
+
+.range-slider {
+  width: 100%;
+  accent-color: var(--cyan-primary);
+  cursor: pointer;
+}
+
+@media (max-width: 1024px) {
+  .sim-grid,
+  .graph-explorer-grid,
+  .cela-split-comparison,
+  .cascade-grid {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+}

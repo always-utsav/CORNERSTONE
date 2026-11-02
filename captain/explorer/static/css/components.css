@@ -1,0 +1,324 @@
+/**
+ * CORNERSTONE Reusable UI Components
+ * Scientific Telemetry Cards, Badges, Precision Buttons, Data Tables, Integrity Banners
+ */
+
+/* ==========================================================================
+   SCIENTIFIC INTEGRITY BADGES & PROVENANCE MARKERS
+   ========================================================================== */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 7px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.badge-measured {
+  background: var(--cyan-dim);
+  color: var(--cyan-primary);
+  border: 1px solid var(--border-glow-cyan);
+}
+
+.badge-live {
+  background: var(--green-dim);
+  color: var(--green-success);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.badge-illustrative {
+  background: var(--violet-dim);
+  color: var(--violet-hover);
+  border: 1px solid var(--border-glow-violet);
+}
+
+.badge-conceptual {
+  background: var(--amber-dim);
+  color: var(--amber-warning);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.badge-failure {
+  background: var(--red-dim);
+  color: var(--red-failure);
+  border: 1px solid rgba(244, 63, 94, 0.3);
+}
+
+.badge-preserved {
+  background: var(--green-dim);
+  color: var(--green-success);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.badge-dim {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted);
+  border: 1px solid var(--border-subtle);
+}
+
+/* ==========================================================================
+   METRIC TELEMETRY CARDS
+   ========================================================================== */
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.metric-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  position: relative;
+  overflow: hidden;
+  transition: transform var(--transition-fast), border-color var(--transition-fast);
+}
+
+.metric-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-strong);
+}
+
+.metric-card.cyan:hover {
+  border-color: var(--cyan-hover);
+  box-shadow: var(--cyan-glow);
+}
+
+.metric-card.violet:hover {
+  border-color: var(--violet-hover);
+  box-shadow: var(--violet-glow);
+}
+
+.metric-card.green:hover {
+  border-color: var(--green-success);
+  box-shadow: var(--green-glow);
+}
+
+.metric-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.metric-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.metric-value {
+  font-family: var(--font-mono);
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.1;
+}
+
+.metric-card.cyan .metric-value { color: var(--cyan-primary); }
+.metric-card.violet .metric-value { color: var(--violet-primary); }
+.metric-card.green .metric-value { color: var(--green-success); }
+.metric-card.amber .metric-value { color: var(--amber-warning); }
+.metric-card.red .metric-value { color: var(--red-failure); }
+
+.metric-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.metric-ci {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  background: var(--bg-deep);
+  padding: 1px 6px;
+  border-radius: 3px;
+  border: 1px solid var(--border-subtle);
+}
+
+/* ==========================================================================
+   BUTTONS
+   ========================================================================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 7px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all var(--transition-fast);
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.btn-primary {
+  background-color: var(--cyan-primary);
+  color: var(--text-inverse);
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
+}
+.btn-primary:hover {
+  background-color: var(--cyan-hover);
+  box-shadow: 0 0 16px rgba(0, 229, 255, 0.4);
+}
+
+.btn-secondary {
+  background-color: var(--bg-surface-elevated);
+  color: var(--text-primary);
+  border-color: var(--border-default);
+}
+.btn-secondary:hover {
+  background-color: var(--bg-surface-card);
+  border-color: var(--border-strong);
+}
+
+.btn-violet {
+  background-color: var(--violet-primary);
+  color: #fff;
+}
+.btn-violet:hover {
+  background-color: var(--violet-hover);
+  box-shadow: var(--violet-glow);
+}
+
+.btn-sm {
+  padding: 4px 10px;
+  font-size: 11px;
+}
+
+.btn-icon {
+  padding: 6px 10px;
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  filter: grayscale(1);
+}
+
+/* ==========================================================================
+   SCIENTIFIC INTEGRITY DISCLAIMER BANNER
+   ========================================================================== */
+.scientific-banner {
+  background: linear-gradient(90deg, rgba(13, 21, 39, 0.95), rgba(22, 36, 65, 0.85));
+  border: 1px solid var(--border-default);
+  border-left: 3px solid var(--cyan-primary);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.scientific-banner .banner-text {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.scientific-banner .banner-text strong {
+  color: var(--text-primary);
+}
+
+/* ==========================================================================
+   SCIENTIFIC DATA TABLES
+   ========================================================================== */
+.table-container {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  text-align: left;
+}
+
+.data-table th {
+  background: var(--bg-surface-elevated);
+  padding: 10px 14px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-default);
+  white-space: nowrap;
+}
+
+.data-table td {
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  vertical-align: middle;
+}
+
+.data-table tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table tr:hover td {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+.data-table tr.clickable {
+  cursor: pointer;
+}
+
+.data-table tr.clickable:hover td {
+  background-color: var(--cyan-dim);
+}
+
+/* ==========================================================================
+   TAB STRIP
+   ========================================================================== */
+.tab-strip {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border-default);
+  margin-bottom: 16px;
+}
+
+.tab-btn {
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.tab-btn:hover {
+  color: var(--text-primary);
+}
+
+.tab-btn.active {
+  color: var(--cyan-primary);
+  border-bottom-color: var(--cyan-primary);
+}
