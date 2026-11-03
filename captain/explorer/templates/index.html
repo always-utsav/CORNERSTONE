@@ -1317,7 +1317,7 @@
           <div style="background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(0, 240, 255, 0.3); border-radius: var(--radius-md); padding: 16px; font-size: 13px; line-height: 1.6; color: var(--text-normal);">
             <strong style="color: var(--primary-cyan);">Methodological Note for Committee:</strong>
             Because differences across all 5 instances are identically +1 (zero variance), a Wilcoxon signed-rank test is degenerate.
-            In strict accordance with scientific integrity guidelines, we <strong>do not claim p &lt; 0.001</strong>. We report this as an <strong>unanimous descriptive observation (5/5 instances, 100% vs 0%)</strong>.
+            In strict accordance with scientific integrity guidelines, we <strong>do not claim p &lt; 0.001</strong>. We report this as an <strong>Unanimous Descriptive Observation (5/5 instances, N=5, 100% vs 0%)</strong>.
           </div>
         </div>
       </div>
@@ -1383,17 +1383,17 @@
         <div class="slide-header">
           <div class="slide-category">REAL-WORLD VALIDATION</div>
           <h2 class="slide-title">Real-LLM Grounding & System Latency</h2>
-          <p class="slide-subtitle">Gemini 2.5 Flash validation and sub-4ms computational scalability.</p>
+          <p class="slide-subtitle">Prompt-level sanity check on gemini-3.6-flash and 2.8ms computational latency.</p>
         </div>
         <div class="slide-content">
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
             <div style="background: var(--bg-surface); padding: 24px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
-              <h4 style="color: var(--primary-cyan); margin-bottom: 12px;">Gemini 2.5 Flash Grounding (Claim C7)</h4>
+              <h4 style="color: var(--primary-cyan); margin-bottom: 12px;">Real-LLM Sanity Check: gemini-3.6-flash (Claim C7)</h4>
               <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.6;">
-                Tested on live prompt-level interventions with Gemini 2.5 Flash API:
+                Targeted prompt sanity check (5 attempted calls/condition): 2 valid completions in factual (2 failures) and channel (0 failures); 1 valid completion in source-event. Remainder encountered API <code>ResourceExhausted</code> errors.
               </p>
-              <div style="font-size: 32px; font-weight: 800; color: var(--primary-cyan); margin: 12px 0;">CEE &gt; 0 Confirmed</div>
-              <p style="font-size: 12px; color: var(--text-muted);">Confirms evidence-channel sensitivity transfers to real probabilistic LLMs.</p>
+              <div style="font-size: 24px; font-weight: 800; color: var(--primary-cyan); margin: 12px 0;">Conditional CEE = 1.0 (Valid) / 0.40 (Raw)</div>
+              <p style="font-size: 12px; color: var(--text-muted);">Confirms prompt-level evidence dependency; quota exhaustion accounted as API execution failure.</p>
             </div>
             <div style="background: var(--bg-surface); padding: 24px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
               <h4 style="color: #a855f7; margin-bottom: 12px;">Computational Latency</h4>

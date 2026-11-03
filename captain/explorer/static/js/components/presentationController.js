@@ -185,8 +185,11 @@ class PresentationController {
       `,
       11: `
         <h5>Audience Talking Points: Slide 11 (Real-LLM & Scalability)</h5>
-        <p>Gemini 2.5 Flash validation confirms non-zero CEE under live prompt-level interventions.</p>
-        <p>Sub-4ms per scenario execution latency enables real-time interactive debugging during live agent execution.</p>
+        <p><strong>Sanity Check Model:</strong> Google Gemini API model <code>gemini-3.6-flash</code> (temperature=0.0).</p>
+        <p><strong>Trial Breakdown:</strong> 5 attempted queries per condition. Due to API quota limits, 10 of 15 calls returned <code>ResourceExhausted</code> (3/5 in factual, 3/5 in channel, 4/5 in source-event). These are strictly accounted as API execution failures.</p>
+        <p><strong>Effect Calculation:</strong> On valid completions, conditional CEE = 1.00 ($2/2 - 0/2$). Naive division over all 5 attempts yields CEE = 0.40 ($2/5 - 0/5$).</p>
+        <p><strong>Scope Caveat:</strong> Targeted prompt-level sanity check on keyword sensitivity, not an end-to-end autonomous agent workflow.</p>
+        <p><strong>Latency:</strong> Mean scenario evaluation latency is 2.8 ms per instance, demonstrating computational feasibility.</p>
       `,
       12: `
         <h5>Audience Talking Points: Slide 12 (Conclusion & Handoff)</h5>

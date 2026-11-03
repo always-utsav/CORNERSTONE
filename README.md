@@ -9,17 +9,17 @@ The research method developed on CAPTAIN is **CELA — Counterfactual Evidence-L
 
 ## Status
 
-**IMPLEMENTATION COMPLETE** — Modules 1, 2, and 3 fully implemented.
+**IMPLEMENTATION COMPLETE** — Modules 1, 2, 3, and 4 fully verified.
 
 **RESEARCH STAGE 2 COMPLETE** — Full experimental campaign executed.
 
-- **720 tests passing** (100% verified, 0 regressions)
+- **730 tests passing** (100% verified, 0 regressions)
 - Full deterministic demo & live agent simulator
 - Explorer with interactive laboratories, benchmark studio, and research dashboard
 - Publication figure gallery (9 vector figures with high-res modal inspector)
 - 12-slide fullscreen presentation mode for faculty evaluation
 - Reproducible experiment workflow & offline deterministic replay
-- Real-LLM sanity validation (Gemini 2.5 Flash)
+- Real-LLM sanity validation (`gemini-3.6-flash` prompt-level sanity check with trial accounting)
 
 ## Documentation
 

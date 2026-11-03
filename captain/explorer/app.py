@@ -1004,7 +1004,7 @@ def create_app(store_dir: Path | None = None) -> Flask:
             {
                 "id": "B4_graph_structural",
                 "code": "B4",
-                "name": "Graph-Structural Heuristic",
+                "name": "Graph-Structural Distance",
                 "category": "Baseline",
                 "description": (
                     "Non-interventional graph centrality ranking (degree, betweenness, "
@@ -1017,7 +1017,7 @@ def create_app(store_dir: Path | None = None) -> Flask:
             {
                 "id": "B5_cost_aware",
                 "code": "B5",
-                "name": "Cost-Aware Greedy",
+                "name": "Cost-Aware Structural",
                 "category": "Baseline",
                 "description": (
                     "Intervenes on minimum-cost candidate channels without counterfactual "
@@ -1117,6 +1117,17 @@ def create_app(store_dir: Path | None = None) -> Flask:
         return jsonify(
             {
                 "methods": methods,
+                "oracle": {
+                    "name": "Exhaustive Oracle",
+                    "role": "Evaluation-Only Diagnostic Upper Bound",
+                    "description": (
+                        "Combinatorial exhaustive replay search over all subsets up to "
+                        "max_set_size. Used solely for computing regret (optimality gap); "
+                        "never accessible as an operational method."
+                    ),
+                    "is_baseline": False,
+                    "exact_optimal_match": "274/275 scenarios (99.64% zero regret across 5 seeds)",
+                },
                 "equivalences": {"A1_cela": "B2_provenance", "A2_cela": "B3_cee_rank"},
                 "total_methods": len(methods),
             }
@@ -1241,17 +1252,17 @@ def create_app(store_dir: Path | None = None) -> Flask:
                 "id": "fig_real_llm",
                 "filename_svg": "fig_real_llm.svg",
                 "filename_png": "fig_real_llm.png",
-                "title": "Real-LLM Validation (Gemini 2.5 Flash Grounding)",
+                "title": "Real-LLM Sanity Check (gemini-3.6-flash)",
                 "category": "Real-LLM Validation",
                 "description": (
-                    "Live prompt-level counterfactual intervention on real Gemini "
-                    "API responses demonstrating non-zero CEE."
+                    "Targeted prompt sanity check on gemini-3.6-flash (5 attempted "
+                    "queries per condition with quota exhaustion breakdown)."
                 ),
                 "key_takeaway": (
                     "Confirms that channel intervention operates on real probabilistic "
                     "LLM completions, not just mock simulators."
                 ),
-                "metric_highlight": "Live CEE > 0 Observed",
+                "metric_highlight": "Conditional CEE: 1.0 (Valid Queries) / 0.40 (Raw Attempted)",
             },
             {
                 "id": "fig_scalability",
